@@ -55,6 +55,24 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({ extended: true }));
 
+// Root Welcome Endpoint
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({
+    name: 'PizzaHub API Server',
+    version: '1.0.0',
+    status: 'running',
+    message: 'Welcome to the PizzaHub Multi-Vendor Platform API',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      menu: '/api/menu',
+      orders: '/api/orders',
+      subscription: '/api/subscription',
+      admin: '/api/admin',
+    },
+  });
+});
+
 // Health Check Endpoint
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
