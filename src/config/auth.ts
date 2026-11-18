@@ -1,16 +1,16 @@
 import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { bearer, jwt } from 'better-auth/plugins';
-import mongoose from 'mongoose';
+import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pizzahub';
 
-const client = new mongoose.mongo.MongoClient(mongoUri, {
-  serverSelectionTimeoutMS: 5000,
-  connectTimeoutMS: 5000,
+const client = new MongoClient(mongoUri, {
+  serverSelectionTimeoutMS: 15000,
+  maxPoolSize: 10,
 });
 const db = client.db();
 

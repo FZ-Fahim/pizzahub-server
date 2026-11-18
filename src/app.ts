@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import { rateLimit } from 'express-rate-limit';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth.js';
-import { connectDB } from './config/db.js';
+import connectDB from './config/db.js';
 import menuRoutes from './routes/menu.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import orderRoutes from './routes/order.routes.js';
@@ -84,7 +84,18 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Root Welcome Endpoints (Responds immediately without waiting on DB)
+// Middleware to ensure DB connection is ready on every Vercel serverless invocation
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("Database connection failed in serverless middleware:", err);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
+
+// Root Welcome Endpoints
 const welcomeResponse = {
   name: 'PizzaHub API Server',
   version: '1.0.0',
@@ -119,16 +130,6 @@ const healthHandler = (req: Request, res: Response) => {
 };
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
-
-// Database auto-connection middleware for serverless invocations
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await connectDB();
-  } catch (err: any) {
-    console.error('[DB Middleware Notice]', err.message);
-  }
-  next();
-});
 
 // Security Guard: Reject role: 'admin' on public registration requests
 app.use('/api/auth', (req: Request, res: Response, next: NextFunction) => {
