@@ -12,6 +12,7 @@ import orderRoutes from './routes/order.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import webhookRoutes from './routes/webhook.routes';
 import adminRoutes from './routes/admin.routes';
+import reviewRoutes from './routes/review.routes';
 import { notFoundHandler, errorHandler } from './middlewares/error.middleware';
 
 dotenv.config();
@@ -108,6 +109,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/webhook', webhookRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Fallback 404 Handler
 app.use(notFoundHandler);

@@ -15,6 +15,11 @@ export const auth = betterAuth({
   database: mongodbAdapter(db),
   secret: process.env.BETTER_AUTH_SECRET || 'pizzahub_super_secret_auth_key_min_32_chars_long',
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+  trustedOrigins: [
+    process.env.CLIENT_URL || 'http://localhost:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+  ],
   emailAndPassword: {
     enabled: true,
   },
