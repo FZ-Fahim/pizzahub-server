@@ -8,35 +8,35 @@ import { AuthenticatedUser } from '../types/express';
 export const verifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
+    const cookieHeader = req.headers.cookie;
 
-    if (!authHeader) {
+    if (!authHeader && !cookieHeader) {
       res.status(401).json({
         error: 'Unauthorized',
-        message: 'Authentication token missing. Bearer token required.',
+        message: 'Authentication token missing. Bearer token or session cookie required.',
       });
       return;
     }
 
-    const token = authHeader.startsWith('Bearer ')
-      ? authHeader.slice(7).trim()
-      : authHeader.trim();
-
-    if (!token) {
-      res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Malformed authorization header. Expected "Bearer <token>".',
-      });
-      return;
+    let token: string | null = null;
+    if (authHeader) {
+      token = authHeader.startsWith('Bearer ')
+        ? authHeader.slice(7).trim()
+        : authHeader.trim();
     }
 
     let userId: string | null = null;
 
     // 1. Attempt decoding custom JWT
-    const decoded = verifyJwt(token);
-    if (decoded && decoded.id) {
-      userId = decoded.id;
-    } else {
-      // 2. Fallback to Better Auth session validation
+    if (token) {
+      const decoded = verifyJwt(token);
+      if (decoded && decoded.id) {
+        userId = decoded.id;
+      }
+    }
+
+    // 2. Fallback to Better Auth session validation (checks session cookies and bearer tokens)
+    if (!userId) {
       try {
         const session = await auth.api.getSession({
           headers: fromNodeHeaders(req.headers),
