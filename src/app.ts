@@ -7,6 +7,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth';
 import menuRoutes from './routes/menu.routes';
 import uploadRoutes from './routes/upload.routes';
+import orderRoutes from './routes/order.routes';
 
 dotenv.config();
 
@@ -66,5 +67,6 @@ app.all('/api/auth/*', toNodeHandler(auth));
 // Application API Routes
 app.use('/api/menu', menuRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/orders', orderRoutes);
 
 export default app;
