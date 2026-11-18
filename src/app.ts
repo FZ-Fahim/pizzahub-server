@@ -21,6 +21,9 @@ dotenv.config();
 
 const app: Application = express();
 
+// Required for Vercel/proxies so secure cookies work properly
+app.set("trust proxy", 1);
+
 // Global Security & Logging Middlewares
 const helmetMiddleware = typeof helmet === 'function' ? helmet : ((helmet as any)?.default || helmet);
 app.use((helmetMiddleware as any)());

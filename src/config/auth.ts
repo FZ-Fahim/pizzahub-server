@@ -23,13 +23,21 @@ export const auth = betterAuth({
     "https://pizzahub-client-chi.vercel.app",
     "http://localhost:3000",
   ],
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
+      partitioned: true, // Needed for Chrome's third-party cookie restrictions
+    },
+  },
   emailAndPassword: {
     enabled: true,
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || 'placeholder_client_id',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'placeholder_client_secret',
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
   user: {
