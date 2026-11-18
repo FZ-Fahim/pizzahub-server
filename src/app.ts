@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth';
+import menuRoutes from './routes/menu.routes';
 
 dotenv.config();
 
@@ -60,5 +61,8 @@ app.use('/api/auth', (req: Request, res: Response, next: NextFunction) => {
 
 // Mount Better Auth handler
 app.all('/api/auth/*', toNodeHandler(auth));
+
+// Application API Routes
+app.use('/api/menu', menuRoutes);
 
 export default app;
