@@ -9,6 +9,7 @@ import menuRoutes from './routes/menu.routes';
 import uploadRoutes from './routes/upload.routes';
 import orderRoutes from './routes/order.routes';
 import subscriptionRoutes from './routes/subscription.routes';
+import webhookRoutes from './routes/webhook.routes';
 
 dotenv.config();
 
@@ -70,5 +71,6 @@ app.use('/api/menu', menuRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/webhook', webhookRoutes);
 
 export default app;
