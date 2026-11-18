@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import rateLimit from 'express-rate-limit';
+import { rateLimit } from 'express-rate-limit';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth.js';
 import { connectDB } from './config/db.js';
@@ -27,7 +27,8 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
   .concat(['http://localhost:3000', 'http://127.0.0.1:3000']);
 
 // Global Security & Logging Middlewares
-app.use(helmet());
+const helmetMiddleware = typeof helmet === 'function' ? helmet : ((helmet as any)?.default || helmet);
+app.use((helmetMiddleware as any)());
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -46,7 +47,8 @@ app.use(
 app.use(morgan('dev'));
 
 // Rate Limiting for API Endpoints (500 requests / 15 minutes per IP)
-const apiLimiter = rateLimit({
+const rateLimitMiddleware = typeof rateLimit === 'function' ? rateLimit : ((rateLimit as any)?.default || rateLimit);
+const apiLimiter = (rateLimitMiddleware as any)({
   windowMs: 15 * 60 * 1000,
   max: 500,
   standardHeaders: true,
