@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { Order } from '../models/Order';
+import { Order, OrderStatus } from '../models/Order';
 import { MenuItem } from '../models/MenuItem';
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
@@ -44,7 +44,6 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Check delivery date is not in the past
     const todayStr = new Date().toISOString().split('T')[0];
     if (deliveryDate < todayStr) {
       res.status(400).json({
@@ -81,8 +80,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // 5. Duplicate Active Order Guard:
-    // Reject if customer already has a pending or accepted order for the same item on the same delivery date
+    // 5. Duplicate Active Order Guard
     const existingActiveOrder = await Order.findOne({
       customerId: customer.id,
       itemId: menuItem._id,
@@ -123,6 +121,134 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({
       error: 'InternalServerError',
       message: `Failed to place order: ${error.message}`,
+    });
+  }
+};
+
+export const getCustomerOrders = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const customerId = req.user!.id;
+    const orders = await Order.find({ customerId })
+      .sort({ createdAt: -1 })
+      .populate('itemId', 'itemName price images category location')
+      .populate('vendorId', 'name businessName email');
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      error: 'InternalServerError',
+      message: `Failed to retrieve customer orders: ${error.message}`,
+    });
+  }
+};
+
+export const cancelCustomerOrder = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const order = req.order!;
+
+    // Constraint: Allowed ONLY if status is 'pending'
+    if (order.status !== 'pending') {
+      res.status(400).json({
+        error: 'BadRequest',
+        message: `Order cannot be cancelled because its current status is '${order.status}'. Only pending orders can be cancelled.`,
+      });
+      return;
+    }
+
+    order.status = 'cancelled';
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Order has been cancelled successfully.',
+      data: updatedOrder,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      error: 'InternalServerError',
+      message: `Failed to cancel order: ${error.message}`,
+    });
+  }
+};
+
+export const getVendorOrders = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const vendorId = req.user!.id;
+    const orders = await Order.find({ vendorId })
+      .sort({ createdAt: -1 })
+      .populate('itemId', 'itemName price images category location')
+      .populate('customerId', 'name email');
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      data: orders,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      error: 'InternalServerError',
+      message: `Failed to retrieve vendor orders: ${error.message}`,
+    });
+  }
+};
+
+export const updateVendorOrderStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const order = req.order!;
+    const { status } = req.body;
+
+    if (!status || !['accepted', 'rejected'].includes(status)) {
+      res.status(400).json({
+        error: 'BadRequest',
+        message: "Status must be either 'accepted' or 'rejected'.",
+      });
+      return;
+    }
+
+    // Constraint: Vendor can only accept/reject once while the order is pending
+    if (order.status !== 'pending') {
+      res.status(400).json({
+        error: 'BadRequest',
+        message: `Order status has already been finalized as '${order.status}' and cannot be modified.`,
+      });
+      return;
+    }
+
+    order.status = status as OrderStatus;
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Order has been ${status} successfully.`,
+      data: updatedOrder,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      error: 'InternalServerError',
+      message: `Failed to update order status: ${error.message}`,
+    });
+  }
+};
+
+export const getOrderById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate('itemId', 'itemName price images category location')
+      .populate('vendorId', 'name businessName email')
+      .populate('customerId', 'name email');
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      error: 'InternalServerError',
+      message: `Failed to retrieve order details: ${error.message}`,
     });
   }
 };
