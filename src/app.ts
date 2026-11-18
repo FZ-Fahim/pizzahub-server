@@ -68,36 +68,39 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({ extended: true }));
 
-// Database auto-connection middleware for serverless invocations
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await connectDB();
-  } catch (err: any) {
-    console.error('[DB Middleware Notice]', err.message);
+// Vercel Serverless Rewrite Path Normalizer
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const matchedPath = req.headers['x-matched-path'] as string;
+  if (matchedPath && req.url === '/api' && matchedPath !== '/api') {
+    req.url = matchedPath;
   }
   next();
 });
 
-// Root Welcome Endpoint
+// Root Welcome Endpoints (Responds immediately without waiting on DB)
+const welcomeResponse = {
+  name: 'PizzaHub API Server',
+  version: '1.0.0',
+  status: 'running',
+  message: 'Welcome to the PizzaHub Multi-Vendor Platform API',
+  endpoints: {
+    health: '/health',
+    auth: '/api/auth',
+    menu: '/api/menu',
+    orders: '/api/orders',
+    subscription: '/api/subscription',
+    admin: '/api/admin',
+  },
+};
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).json({
-    name: 'PizzaHub API Server',
-    version: '1.0.0',
-    status: 'running',
-    message: 'Welcome to the PizzaHub Multi-Vendor Platform API',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      menu: '/api/menu',
-      orders: '/api/orders',
-      subscription: '/api/subscription',
-      admin: '/api/admin',
-    },
-  });
+  res.status(200).json(welcomeResponse);
+});
+app.get('/api', (req: Request, res: Response) => {
+  res.status(200).json(welcomeResponse);
 });
 
-// Health Check Endpoint
-app.get('/health', (req: Request, res: Response) => {
+// Health Check Endpoints (Available at both /health and /api/health)
+const healthHandler = (req: Request, res: Response) => {
   const isConnected = mongoose.connection.readyState === 1;
   res.status(200).json({
     status: 'ok',
@@ -106,6 +109,18 @@ app.get('/health', (req: Request, res: Response) => {
     uptime: process.uptime(),
     service: 'pizzahub-server',
   });
+};
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
+
+// Database auto-connection middleware for serverless invocations
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await connectDB();
+  } catch (err: any) {
+    console.error('[DB Middleware Notice]', err.message);
+  }
+  next();
 });
 
 // Security Guard: Reject role: 'admin' on public registration requests

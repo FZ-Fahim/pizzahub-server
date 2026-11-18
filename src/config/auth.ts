@@ -8,7 +8,10 @@ dotenv.config();
 
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pizzahub';
 
-const client = new mongoose.mongo.MongoClient(mongoUri);
+const client = new mongoose.mongo.MongoClient(mongoUri, {
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 5000,
+});
 const db = client.db();
 
 const configuredOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
