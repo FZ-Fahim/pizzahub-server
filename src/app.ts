@@ -8,6 +8,7 @@ import { auth } from './config/auth';
 import menuRoutes from './routes/menu.routes';
 import uploadRoutes from './routes/upload.routes';
 import orderRoutes from './routes/order.routes';
+import subscriptionRoutes from './routes/subscription.routes';
 
 dotenv.config();
 
@@ -68,5 +69,6 @@ app.all('/api/auth/*', toNodeHandler(auth));
 app.use('/api/menu', menuRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 export default app;
