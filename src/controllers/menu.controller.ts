@@ -11,6 +11,89 @@ const VALID_CATEGORIES: MenuCategory[] = [
   'Beverages & Desserts',
 ];
 
+export const getPublicMenuItems = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      search,
+      category,
+      location,
+      minPrice,
+      maxPrice,
+      sort = 'newest',
+      page = '1',
+      limit = '9',
+    } = req.query;
+
+    const query: any = {
+      status: 'approved', // Strictly approved items
+    };
+
+    if (search && typeof search === 'string' && search.trim() !== '') {
+      query.itemName = { $regex: search.trim(), $options: 'i' };
+    }
+
+    if (category && typeof category === 'string' && category.trim() !== '' && category !== 'All') {
+      query.category = category.trim();
+    }
+
+    if (location && typeof location === 'string' && location.trim() !== '') {
+      query.location = { $regex: location.trim(), $options: 'i' };
+    }
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice && !isNaN(Number(minPrice))) {
+        query.price.$gte = Number(minPrice);
+      }
+      if (maxPrice && !isNaN(Number(maxPrice))) {
+        query.price.$lte = Number(maxPrice);
+      }
+    }
+
+    let sortOptions: any = { createdAt: -1 };
+    if (sort === 'price_asc') {
+      sortOptions = { price: 1 };
+    } else if (sort === 'price_desc') {
+      sortOptions = { price: -1 };
+    } else if (sort === 'oldest') {
+      sortOptions = { createdAt: 1 };
+    }
+
+    const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+    const limitNum = Math.max(1, Math.min(50, parseInt(limit as string, 10) || 9));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [items, total] = await Promise.all([
+      MenuItem.find(query)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limitNum)
+        .populate('vendorId', 'name businessName image subscriptionPlan'),
+      MenuItem.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(total / limitNum);
+
+    res.status(200).json({
+      success: true,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages,
+        hasNextPage: pageNum < totalPages,
+        hasPrevPage: pageNum > 1,
+      },
+      data: items,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      error: 'InternalServerError',
+      message: `Failed to retrieve public menu items: ${error.message}`,
+    });
+  }
+};
+
 export const createMenuItem = async (req: Request, res: Response): Promise<void> => {
   try {
     const { itemName, category, description, price, location, images } = req.body;
@@ -48,6 +131,22 @@ export const createMenuItem = async (req: Request, res: Response): Promise<void>
       return;
     }
 
+    // Business Rule Guard: Free tier allows maximum 3 active items
+    if (req.user!.subscriptionPlan === 'free') {
+      const activeCount = await MenuItem.countDocuments({
+        vendorId: req.user!.id,
+        status: { $ne: 'inactive' },
+      });
+
+      if (activeCount >= 3) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'Free plan allows a maximum of 3 active items. Upgrade to Premium for unlimited publishing.',
+        });
+        return;
+      }
+    }
+
     const newItem = await MenuItem.create({
       vendorId: req.user!.id,
       itemName: itemName.trim(),
@@ -56,7 +155,7 @@ export const createMenuItem = async (req: Request, res: Response): Promise<void>
       price: parsedPrice,
       location: location.trim(),
       images,
-      status: 'pending', // Always start as pending review
+      status: 'pending',
     });
 
     res.status(201).json({
@@ -102,7 +201,7 @@ export const getMenuItemById = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const item = await MenuItem.findById(id).populate('vendorId', 'name businessName email image');
+    const item = await MenuItem.findById(id).populate('vendorId', 'name businessName email image subscriptionPlan');
 
     if (!item) {
       res.status(404).json({
@@ -157,12 +256,27 @@ export const updateMenuItem = async (req: Request, res: Response): Promise<void>
       menuItem.images = images;
     }
 
-    // Status management:
-    // Non-admin vendors can toggle to 'inactive' or resubmit to 'pending'
+    // Status management with Free Tier guard
     if (status) {
       if (req.user!.role === 'admin') {
         menuItem.status = status;
       } else if (['inactive', 'pending'].includes(status)) {
+        // If reactivating an inactive item, enforce 3-item limit
+        if (status !== 'inactive' && menuItem.status === 'inactive' && req.user!.subscriptionPlan === 'free') {
+          const activeCount = await MenuItem.countDocuments({
+            vendorId: req.user!.id,
+            status: { $ne: 'inactive' },
+            _id: { $ne: menuItem._id },
+          });
+
+          if (activeCount >= 3) {
+            res.status(403).json({
+              error: 'Forbidden',
+              message: 'Free plan allows a maximum of 3 active items. Upgrade to Premium for unlimited publishing.',
+            });
+            return;
+          }
+        }
         menuItem.status = status;
       }
     }

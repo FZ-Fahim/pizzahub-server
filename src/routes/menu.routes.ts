@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  getPublicMenuItems,
   createMenuItem,
   getVendorMenuItems,
   getMenuItemById,
@@ -10,6 +11,9 @@ import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.m
 import { verifyMenuItemOwnership } from '../middlewares/ownership.middleware';
 
 const router = Router();
+
+// Public advanced search, filter, and sort menu query
+router.get('/', getPublicMenuItems);
 
 // Vendor-specific item retrieval (must be defined before /:id)
 router.get('/vendor', verifyToken, checkNotBlocked, requireRole('vendor'), getVendorMenuItems);
