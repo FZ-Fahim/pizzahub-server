@@ -5,7 +5,6 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
-import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth';
 import { connectDB } from './config/db';
 import menuRoutes from './routes/menu.routes';
@@ -138,8 +137,20 @@ app.use('/api/auth', (req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Mount Better Auth handler
-app.all('/api/auth/*', toNodeHandler(auth));
+// Mount Better Auth handler with dynamic import for CommonJS/Vercel serverless runtime
+let nodeHandler: any = null;
+
+app.all('/api/auth/*', async (req, res, next) => {
+  try {
+    if (!nodeHandler) {
+      const { toNodeHandler } = await import('better-auth/node');
+      nodeHandler = toNodeHandler(auth);
+    }
+    return nodeHandler(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Application API Routes
 app.use('/api/menu', menuRoutes);
