@@ -14,18 +14,14 @@ const client = new mongoose.mongo.MongoClient(mongoUri, {
 });
 const db = client.db();
 
-const configuredOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
-  .split(',')
-  .map((url) => url.trim().replace(/\/$/, ''));
-
 export const auth = betterAuth({
   database: mongodbAdapter(db),
   secret: process.env.BETTER_AUTH_SECRET || 'pizzahub_super_secret_auth_key_min_32_chars_long',
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
   trustedOrigins: [
-    ...configuredOrigins,
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    process.env.CLIENT_URL || "http://localhost:3000",
+    "https://pizzahub-client-chi.vercel.app",
+    "http://localhost:3000",
   ],
   emailAndPassword: {
     enabled: true,

@@ -21,29 +21,34 @@ dotenv.config();
 
 const app: Application = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
-  .split(',')
-  .map((url) => url.trim().replace(/\/$/, ''))
-  .concat(['http://localhost:3000', 'http://127.0.0.1:3000']);
-
 // Global Security & Logging Middlewares
 const helmetMiddleware = typeof helmet === 'function' ? helmet : ((helmet as any)?.default || helmet);
 app.use((helmetMiddleware as any)());
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "https://pizzahub-client-chi.vercel.app",
+  "http://localhost:3000",
+].filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or SSR)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      // Allow requests with no origin (like mobile apps, curl, serverless)
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
         return callback(null, true);
       }
-      return callback(null, true);
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with'],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Requested-With"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
+
+// Ensure OPTIONS preflight requests pass through cleanly
+app.options("*", cors());
 app.use(morgan('dev'));
 
 // Rate Limiting for API Endpoints (500 requests / 15 minutes per IP)
