@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { MenuItem, MenuCategory, MenuItemStatus } from '../models/MenuItem';
+import { MenuItem, MenuCategory, MenuItemStatus } from '../models/MenuItem.js';
 
 const VALID_CATEGORIES: MenuCategory[] = [
   'Classic Pizzas',

@@ -3,8 +3,8 @@ import {
   createCheckoutSession,
   getSubscriptionStatus,
   verifyCheckoutSession,
-} from '../controllers/subscription.controller';
-import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware';
+} from '../controllers/subscription.controller.js';
+import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 

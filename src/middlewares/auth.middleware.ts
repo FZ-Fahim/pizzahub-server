@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { fromNodeHeaders } from 'better-auth/node';
-import { auth } from '../config/auth';
-import { User, UserRole } from '../models/User';
-import { verifyJwt } from '../utils/jwt.util';
-import { AuthenticatedUser } from '../types/express';
+import { auth } from '../config/auth.js';
+import { User, UserRole } from '../models/User.js';
+import { verifyJwt } from '../utils/jwt.util.js';
+import { AuthenticatedUser } from '../types/express.js';
 
 export const verifyToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

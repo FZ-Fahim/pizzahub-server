@@ -5,16 +5,17 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
-import { auth } from './config/auth';
-import { connectDB } from './config/db';
-import menuRoutes from './routes/menu.routes';
-import uploadRoutes from './routes/upload.routes';
-import orderRoutes from './routes/order.routes';
-import subscriptionRoutes from './routes/subscription.routes';
-import webhookRoutes from './routes/webhook.routes';
-import adminRoutes from './routes/admin.routes';
-import reviewRoutes from './routes/review.routes';
-import { notFoundHandler, errorHandler } from './middlewares/error.middleware';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from './config/auth.js';
+import { connectDB } from './config/db.js';
+import menuRoutes from './routes/menu.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
+import orderRoutes from './routes/order.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
+import webhookRoutes from './routes/webhook.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import reviewRoutes from './routes/review.routes.js';
+import { notFoundHandler, errorHandler } from './middlewares/error.middleware.js';
 
 dotenv.config();
 
@@ -137,19 +138,11 @@ app.use('/api/auth', (req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Mount Better Auth handler with dynamic import for CommonJS/Vercel serverless runtime
-let nodeHandler: any = null;
+// Mount Better Auth handler
+const authNodeHandler = toNodeHandler(auth);
 
-app.all('/api/auth/*', async (req, res, next) => {
-  try {
-    if (!nodeHandler) {
-      const { toNodeHandler } = await import('better-auth/node');
-      nodeHandler = toNodeHandler(auth);
-    }
-    return nodeHandler(req, res);
-  } catch (error) {
-    next(error);
-  }
+app.all('/api/auth/*', (req, res) => {
+  return authNodeHandler(req, res);
 });
 
 // Application API Routes

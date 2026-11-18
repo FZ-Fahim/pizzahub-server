@@ -6,9 +6,9 @@ import {
   getVendorOrders,
   updateVendorOrderStatus,
   getOrderById,
-} from '../controllers/order.controller';
-import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware';
-import { verifyOrderOwnership } from '../middlewares/ownership.middleware';
+} from '../controllers/order.controller.js';
+import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware.js';
+import { verifyOrderOwnership } from '../middlewares/ownership.middleware.js';
 
 const router = Router();
 

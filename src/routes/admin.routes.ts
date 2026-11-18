@@ -7,8 +7,8 @@ import {
   updateMenuItemStatus,
   deleteAdminMenuItem,
   getAdminTransactions,
-} from '../controllers/admin.controller';
-import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware';
+} from '../controllers/admin.controller.js';
+import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 

@@ -6,9 +6,9 @@ import {
   getMenuItemById,
   updateMenuItem,
   deleteMenuItem,
-} from '../controllers/menu.controller';
-import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware';
-import { verifyMenuItemOwnership } from '../middlewares/ownership.middleware';
+} from '../controllers/menu.controller.js';
+import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware.js';
+import { verifyMenuItemOwnership } from '../middlewares/ownership.middleware.js';
 
 const router = Router();
 

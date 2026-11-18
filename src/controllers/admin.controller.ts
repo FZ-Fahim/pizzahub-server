@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { User } from '../models/User';
-import { MenuItem } from '../models/MenuItem';
-import { Order } from '../models/Order';
-import { Transaction } from '../models/Transaction';
+import { User } from '../models/User.js';
+import { MenuItem } from '../models/MenuItem.js';
+import { Order } from '../models/Order.js';
+import { Transaction } from '../models/Transaction.js';
 
 export const getAdminOverview = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { UserRole } from '../models/User';
+import { UserRole } from '../models/User.js';
 
 export interface JwtPayload {
   id: string;

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { Order, OrderStatus } from '../models/Order';
-import { MenuItem } from '../models/MenuItem';
+import { Order, OrderStatus } from '../models/Order.js';
+import { MenuItem } from '../models/MenuItem.js';
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
   try {

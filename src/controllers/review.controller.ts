@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { Review } from '../models/Review';
-import { MenuItem } from '../models/MenuItem';
+import { Review } from '../models/Review.js';
+import { MenuItem } from '../models/MenuItem.js';
 
 export const createReview = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -88,7 +88,7 @@ export const getItemReviews = async (req: Request, res: Response): Promise<void>
       totalCount > 0
         ? Number(
             (
-              reviews.reduce((acc, curr) => acc + curr.rating, 0) / totalCount
+              reviews.reduce((acc: number, curr: any) => acc + curr.rating, 0) / totalCount
             ).toFixed(1)
           )
         : 5.0;

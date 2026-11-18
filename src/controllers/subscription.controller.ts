@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import stripe from '../config/stripe';
-import { User } from '../models/User';
-import { MenuItem } from '../models/MenuItem';
-import { Transaction } from '../models/Transaction';
+import stripe from '../config/stripe.js';
+import { User } from '../models/User.js';
+import { MenuItem } from '../models/MenuItem.js';
+import { Transaction } from '../models/Transaction.js';
 
 export const createCheckoutSession = async (req: Request, res: Response): Promise<void> => {
   try {

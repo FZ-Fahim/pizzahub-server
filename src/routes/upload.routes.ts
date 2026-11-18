@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
-import { uploadMiddleware } from '../services/upload.service';
-import { uploadImageHandler } from '../controllers/upload.controller';
-import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware';
+import { uploadMiddleware } from '../services/upload.service.js';
+import { uploadImageHandler } from '../controllers/upload.controller.js';
+import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 

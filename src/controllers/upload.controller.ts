@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { uploadToImgBB } from '../services/upload.service';
+import { uploadToImgBB } from '../services/upload.service.js';
 
 export const uploadImageHandler = async (req: Request, res: Response): Promise<void> => {
   try {

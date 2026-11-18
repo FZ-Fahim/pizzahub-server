@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { auth } from '../config/auth';
-import { connectDB, closeDB } from '../config/db';
+import { auth } from '../config/auth.js';
+import { connectDB, closeDB } from '../config/db.js';
 
 dotenv.config();
 

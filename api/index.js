@@ -1,12 +1,7 @@
-let app;
-try {
-  app = require('../dist/app');
-} catch (e) {
-  app = require('../src/app');
-}
+import app from '../dist/app.js';
 
 const expressApp = app.default || app;
 
-module.exports = (req, res) => {
+export default function handler(req, res) {
   return expressApp(req, res);
-};
+}

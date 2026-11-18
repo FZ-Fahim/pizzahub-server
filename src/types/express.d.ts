@@ -1,6 +1,6 @@
-import { IUser, UserRole, SubscriptionPlan } from '../models/User';
-import { IMenuItem } from '../models/MenuItem';
-import { IOrder } from '../models/Order';
+import { IUser, UserRole, SubscriptionPlan } from '../models/User.js';
+import { IMenuItem } from '../models/MenuItem.js';
+import { IOrder } from '../models/Order.js';
 
 export interface AuthenticatedUser {
   id: string;

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import stripe from '../config/stripe';
-import { User } from '../models/User';
-import { Transaction } from '../models/Transaction';
+import stripe from '../config/stripe.js';
+import { User } from '../models/User.js';
+import { Transaction } from '../models/Transaction.js';
 
 export const handleStripeWebhook = async (req: Request, res: Response): Promise<void> => {
   const sig = req.headers['stripe-signature'];

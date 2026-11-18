@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createReview, getItemReviews } from '../controllers/review.controller';
-import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware';
+import { createReview, getItemReviews } from '../controllers/review.controller.js';
+import { verifyToken, checkNotBlocked, requireRole } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
