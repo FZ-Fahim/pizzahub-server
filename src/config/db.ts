@@ -6,6 +6,10 @@ const RETRY_INTERVAL_MS = 5000;
 let retryCount = 0;
 
 export const connectDB = async (): Promise<void> => {
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+
   const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pizzahub';
 
   // Setup connection event listeners
