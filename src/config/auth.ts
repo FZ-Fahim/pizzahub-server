@@ -17,18 +17,17 @@ const db = client.db();
 export const auth = betterAuth({
   database: mongodbAdapter(db),
   secret: process.env.BETTER_AUTH_SECRET || 'pizzahub_super_secret_auth_key_min_32_chars_long',
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+  baseURL: process.env.BETTER_AUTH_URL || "https://pizzahub-server-one.vercel.app",
   trustedOrigins: [
-    process.env.CLIENT_URL || "http://localhost:3000",
     "https://pizzahub-client-chi.vercel.app",
     "http://localhost:3000",
+    ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
   ],
   advanced: {
+    useSecureCookies: true,
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,
-      httpOnly: true,
-      partitioned: true, // Needed for Chrome's third-party cookie restrictions
     },
   },
   emailAndPassword: {
