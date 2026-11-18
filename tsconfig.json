@@ -6,6 +6,8 @@
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
+    // Suppress TypeScript 6 deprecation diagnostics for inherited options such as baseUrl.
+    "ignoreDeprecations": "5.0",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
