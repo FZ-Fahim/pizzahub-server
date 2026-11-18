@@ -1,4 +1,6 @@
 import { IUser, UserRole, SubscriptionPlan } from '../models/User';
+import { IMenuItem } from '../models/MenuItem';
+import { IOrder } from '../models/Order';
 
 export interface AuthenticatedUser {
   id: string;
@@ -16,6 +18,8 @@ declare global {
   namespace Express {
     interface Request {
       user?: AuthenticatedUser;
+      menuItem?: IMenuItem;
+      order?: IOrder;
     }
   }
 }

@@ -110,3 +110,24 @@ export const requireRole = (...roles: UserRole[]) => {
     next();
   };
 };
+
+export const checkNotBlocked = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Authentication required before account status verification.',
+    });
+    return;
+  }
+
+  if (req.user.isBlocked) {
+    res.status(403).json({
+      error: 'Forbidden',
+      message: 'Your account has been suspended. Please contact support.',
+    });
+    return;
+  }
+
+  next();
+};
+
