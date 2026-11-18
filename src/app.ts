@@ -3,9 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth';
+import { connectDB } from './config/db';
 import menuRoutes from './routes/menu.routes';
 import uploadRoutes from './routes/upload.routes';
 import orderRoutes from './routes/order.routes';
@@ -66,6 +68,16 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({ extended: true }));
 
+// Database auto-connection middleware for serverless invocations
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await connectDB();
+  } catch (err: any) {
+    console.error('[DB Middleware Notice]', err.message);
+  }
+  next();
+});
+
 // Root Welcome Endpoint
 app.get('/', (req: Request, res: Response) => {
   res.status(200).json({
@@ -86,8 +98,10 @@ app.get('/', (req: Request, res: Response) => {
 
 // Health Check Endpoint
 app.get('/health', (req: Request, res: Response) => {
+  const isConnected = mongoose.connection.readyState === 1;
   res.status(200).json({
     status: 'ok',
+    database: isConnected ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     service: 'pizzahub-server',

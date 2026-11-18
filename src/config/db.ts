@@ -1,61 +1,37 @@
 import mongoose from 'mongoose';
 
-const MAX_RETRIES = 5;
-const RETRY_INTERVAL_MS = 5000;
-
-let retryCount = 0;
+let cachedPromise: Promise<typeof mongoose> | null = null;
 
 export const connectDB = async (): Promise<void> => {
   if (mongoose.connection.readyState >= 1) {
     return;
   }
 
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pizzahub';
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    console.warn('[Database] Warning: MONGODB_URI environment variable is not defined.');
+    return;
+  }
 
-  // Setup connection event listeners
-  mongoose.connection.on('connected', () => {
-    console.log('[Database] Connected to MongoDB successfully');
-    retryCount = 0;
-  });
+  if (!cachedPromise) {
+    cachedPromise = mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+    });
+  }
 
-  mongoose.connection.on('error', (err) => {
-    console.error(`[Database] MongoDB connection error: ${err.message}`);
-  });
-
-  mongoose.connection.on('disconnected', () => {
-    console.warn('[Database] MongoDB disconnected.');
-  });
-
-  mongoose.connection.on('reconnected', () => {
-    console.log('[Database] MongoDB reconnected successfully');
-  });
-
-  const attemptConnection = async () => {
-    try {
-      await mongoose.connect(mongoUri, {
-        serverSelectionTimeoutMS: 5000,
-      });
-    } catch (error: any) {
-      retryCount++;
-      console.error(
-        `[Database] Initial MongoDB connection failed (Attempt ${retryCount}/${MAX_RETRIES}): ${error.message}`
-      );
-
-      if (retryCount < MAX_RETRIES) {
-        console.log(`[Database] Retrying connection in ${RETRY_INTERVAL_MS / 1000} seconds...`);
-        setTimeout(attemptConnection, RETRY_INTERVAL_MS);
-      } else {
-        console.error('[Database] Maximum retry attempts reached. MongoDB connection could not be established.');
-      }
-    }
-  };
-
-  await attemptConnection();
+  try {
+    await cachedPromise;
+    console.log('[Database] MongoDB connected successfully');
+  } catch (error: any) {
+    cachedPromise = null;
+    console.error(`[Database] MongoDB connection error: ${error.message}`);
+  }
 };
 
 export const closeDB = async (): Promise<void> => {
   try {
     await mongoose.connection.close();
+    cachedPromise = null;
     console.log('[Database] MongoDB connection closed gracefully');
   } catch (error: any) {
     console.error(`[Database] Error while closing MongoDB connection: ${error.message}`);
