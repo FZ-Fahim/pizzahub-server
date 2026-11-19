@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { rateLimit } from 'express-rate-limit';
 import { toNodeHandler } from 'better-auth/node';
-import { auth } from './config/auth.js';
+import { auth, ensureAuthConnected } from './config/auth.js';
 import connectDB from './config/db.js';
 import menuRoutes from './routes/menu.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
@@ -90,7 +90,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Middleware to ensure DB connection is ready on every Vercel serverless invocation
 app.use(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await connectDB();
+    await Promise.all([connectDB(), ensureAuthConnected()]);
     next();
   } catch (err) {
     console.error("Database connection failed in serverless middleware:", err);
